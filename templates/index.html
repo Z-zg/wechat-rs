@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}WeChat 登录演示{% endblock %}
+
+{% block content %}
+<h1>WeChat OAuth2 登录演示</h1>
+
+{% if auth_url.starts_with("/dev-callback") %}
+<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+    <h3 style="color: #856404; margin-top: 0;">🔧 开发模式</h3>
+    <p style="color: #856404; margin-bottom: 0;">当前运行在开发模式下，将使用Mock数据模拟微信登录流程，无需真实的微信回调。</p>
+</div>
+{% endif %}
+
+<p>点击下面的按钮使用微信登录：</p>
+
+<a href="{{ auth_url }}" class="btn">
+    {% if auth_url.starts_with("/dev-callback") %}
+        🔧 开发模式登录 (Mock数据)
+    {% else %}
+        🔐 使用微信登录
+    {% endif %}
+</a>
+
+<div style="margin-top: 30px;">
+    <h3>说明：</h3>
+    <ul>
+        {% if auth_url.starts_with("/dev-callback") %}
+        <li>当前为开发模式，使用Mock数据</li>
+        <li>点击登录按钮将直接显示模拟的用户信息</li>
+        <li>适合本地开发和测试使用</li>
+        {% else %}
+        <li>这是一个微信 OAuth2 登录的演示应用</li>
+        <li>点击登录按钮将跳转到微信授权页面</li>
+        <li>授权成功后会返回用户信息</li>
+        {% endif %}
+    </ul>
+</div>
+{% endblock %}

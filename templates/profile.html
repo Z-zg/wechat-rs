@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}用户信息 - WeChat Auth{% endblock %}
+
+{% block content %}
+<h1>登录成功！</h1>
+
+<div class="user-info">
+    <div class="user-details">
+        <img src="{{ user.headimgurl }}" alt="头像" class="avatar">
+        <div>
+            <h2>{{ user.nickname }}</h2>
+            <p><strong>OpenID:</strong> {{ user.openid }}</p>
+            <p><strong>性别:</strong> 
+                {% if user.sex == 1 %}男{% else if user.sex == 2 %}女{% else %}未知{% endif %}
+            </p>
+            <p><strong>地区:</strong> {{ user.country }} {{ user.province }} {{ user.city }}</p>
+            {% match user.unionid %}
+            {% when Some with (unionid) %}
+            <p><strong>UnionID:</strong> {{ unionid }}</p>
+            {% when None %}
+            {% endmatch %}
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 20px;">
+    <a href="/" class="btn">返回首页</a>
+</div>
+{% endblock %}
