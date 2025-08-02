@@ -5,10 +5,12 @@
 ## 功能特性
 
 - 🔐 完整的微信OAuth2认证流程
+- 🤖 微信公众号服务器配置和消息处理
 - 🌐 传统Web应用界面（使用Askama模板）
 - 🛡️ CSRF保护（状态参数验证）
 - 📱 响应式设计
 - 🚀 高性能异步处理（基于Tokio和Axum）
+- 🔧 开发模式支持（Mock数据测试）
 
 ## 项目结构
 
@@ -51,12 +53,33 @@ cp .env.example .env
 export WECHAT_APP_ID="你的微信应用ID"
 export WECHAT_APP_SECRET="你的微信应用密钥"
 export WECHAT_REDIRECT_URI="http://localhost:3000/callback"
+export WECHAT_TOKEN="你的微信服务器Token"  # 可选，用于公众号消息处理
 
 # 启动服务器
 cargo run
 ```
 
 访问 http://localhost:3000 开始使用。
+
+## 微信服务器配置
+
+除了OAuth2登录，本项目还支持微信公众号的服务器配置：
+
+### 配置步骤
+
+1. 在微信公众平台设置服务器URL: `https://yourdomain.com/wechat`
+2. 设置Token与环境变量 `WECHAT_TOKEN` 保持一致
+3. 启动应用后点击"提交"验证服务器
+
+### 支持功能
+
+- ✅ 服务器URL验证
+- ✅ 文本消息自动回复
+- ✅ 关注/取消关注事件处理
+- ✅ 菜单点击事件处理
+- ✅ 图片、语音等多媒体消息处理
+
+详细配置请参考 [微信服务器配置指南](WECHAT_SERVER_SETUP.md)
 
 ## API文档
 

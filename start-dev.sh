@@ -9,6 +9,7 @@ export DEV_MODE=true
 export WECHAT_APP_ID="dev_app_id"
 export WECHAT_APP_SECRET="dev_app_secret"
 export WECHAT_REDIRECT_URI="http://localhost:3000/dev-callback"
+export WECHAT_TOKEN="dev_token"
 
 echo "✅ 开发模式配置:"
 echo "   DEV_MODE=true"

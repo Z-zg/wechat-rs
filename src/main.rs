@@ -1,13 +1,15 @@
 mod config;
 mod wechat_auth;
+mod wechat_server;
 
 use askama::Template;
 use axum::{
     Router,
     extract::{Query, State},
     http::StatusCode,
-    response::Html,
-    routing::get,
+    response::{Html, Response},
+    routing::{get, post},
+    body::Body,
 };
 use config::AppConfig;
 use serde::Deserialize;
@@ -15,6 +17,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 use wechat_auth::{WeChatAuth, WeChatConfig};
+use wechat_server::{WeChatServerConfig, WeChatVerifyQuery, WeChatMessageQuery, WeChatMessage};
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -43,6 +46,7 @@ struct CallbackQuery {
 
 struct AppState {
     wechat_auth: WeChatAuth,
+    wechat_server: WeChatServerConfig,
     sessions: tokio::sync::RwLock<HashMap<String, String>>,
     dev_mode: bool,
 }
@@ -252,8 +256,16 @@ async fn main() {
         redirect_uri: app_config.wechat_redirect_uri.clone(),
     };
 
+    // Initialize WeChat server configuration
+    let wechat_server_config = WeChatServerConfig::new(
+        app_config.wechat_token.clone(),
+        app_config.wechat_app_id.clone(),
+        app_config.wechat_app_secret.clone(),
+    );
+
     let app_state = Arc::new(AppState {
         wechat_auth: WeChatAuth::new(wechat_config),
+        wechat_server: wechat_server_config,
         sessions: tokio::sync::RwLock::new(HashMap::new()),
         dev_mode: app_config.dev_mode,
     });
@@ -263,12 +275,14 @@ async fn main() {
             .route("/", get(index))
             .route("/callback", get(callback))
             .route("/dev-callback", get(dev_callback))
+            .route("/wechat", get(wechat_verify).post(wechat_message))
             .layer(CorsLayer::permissive())
             .with_state(app_state)
     } else {
         Router::new()
             .route("/", get(index))
             .route("/callback", get(callback))
+            .route("/wechat", get(wechat_verify).post(wechat_message))
             .layer(CorsLayer::permissive())
             .with_state(app_state)
     };
@@ -286,4 +300,40 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(&server_addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+// 微信服务器验证 (GET请求)
+async fn wechat_verify(
+    Query(params): Query<WeChatVerifyQuery>,
+    State(state): State<Arc<AppState>>,
+) -> Result<String, StatusCode> {
+    match state.wechat_server.handle_verify(params) {
+        Ok(echostr) => Ok(echostr),
+        Err(_) => Err(StatusCode::FORBIDDEN),
+    }
+}
+
+// 微信消息处理 (POST请求)
+async fn wechat_message(
+    Query(params): Query<WeChatMessageQuery>,
+    State(state): State<Arc<AppState>>,
+    body: String,
+) -> Result<Response<Body>, StatusCode> {
+    // 验证签名
+    if !state.wechat_server.verify_signature(&params.signature, &params.timestamp, &params.nonce) {
+        return Err(StatusCode::FORBIDDEN);
+    }
+
+    // 解析XML消息
+    let msg: WeChatMessage = match quick_xml::de::from_str(&body) {
+        Ok(msg) => msg,
+        Err(_) => return Err(StatusCode::BAD_REQUEST),
+    };
+
+    // 处理消息并生成回复
+    let response_xml = state.wechat_server.handle_message(msg);
+    
+    Ok(Response::builder()
+        .header("Content-Type", "application/xml; charset=utf-8")
+        .body(Body::from(response_xml))
+        .unwrap())
 }

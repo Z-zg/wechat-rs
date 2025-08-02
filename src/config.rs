@@ -5,6 +5,7 @@ pub struct AppConfig {
     pub wechat_app_id: String,
     pub wechat_app_secret: String,
     pub wechat_redirect_uri: String,
+    pub wechat_token: String,
     pub server_host: String,
     pub server_port: u16,
     pub dev_mode: bool,
@@ -20,6 +21,9 @@ impl AppConfig {
         
         let wechat_redirect_uri = env::var("WECHAT_REDIRECT_URI")
             .unwrap_or_else(|_| "http://localhost:3000/callback".to_string());
+        
+        let wechat_token = env::var("WECHAT_TOKEN")
+            .unwrap_or_else(|_| "your_wechat_token".to_string());
         
         let server_host = env::var("SERVER_HOST")
             .unwrap_or_else(|_| "0.0.0.0".to_string());
@@ -38,6 +42,7 @@ impl AppConfig {
             wechat_app_id,
             wechat_app_secret,
             wechat_redirect_uri,
+            wechat_token,
             server_host,
             server_port,
             dev_mode,

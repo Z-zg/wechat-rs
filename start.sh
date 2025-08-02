@@ -20,9 +20,15 @@ if [ -z "$WECHAT_REDIRECT_URI" ]; then
     export WECHAT_REDIRECT_URI="http://localhost:3000/callback"
 fi
 
+if [ -z "$WECHAT_TOKEN" ]; then
+    echo "⚠️  警告: 未设置 WECHAT_TOKEN，微信服务器功能将使用默认值"
+    export WECHAT_TOKEN="default_token"
+fi
+
 echo "✅ 环境变量检查完成"
 echo "📱 App ID: $WECHAT_APP_ID"
 echo "🔗 Redirect URI: $WECHAT_REDIRECT_URI"
+echo "🔑 Server Token: $WECHAT_TOKEN"
 
 # 构建项目
 echo "🔨 构建项目..."

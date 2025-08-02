@@ -1,6 +1,8 @@
 pub mod wechat_auth;
+pub mod wechat_server;
 
 pub use wechat_auth::{WeChatAuth, WeChatConfig, WeChatUserInfo, WeChatAuthResponse};
+pub use wechat_server::{WeChatServerConfig, WeChatMessage, WeChatVerifyQuery, WeChatMessageQuery};
 
 #[cfg(test)]
 mod tests {
